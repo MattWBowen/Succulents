@@ -33,8 +33,8 @@ router.route('/succulents')
   .get(function(req, res) {
     Succulent.find(function(err, succulents) {
       if (err)
-        res.send(err);
-      res.status(200).json(succulents);
+        return res.send(err);
+      return res.status(200).json(succulents);
     });
   })
 
@@ -45,11 +45,14 @@ router.route('/succulents')
     newSucculent.description = req.body.description;
     newSucculent.location = req.body.location;
 
-    // Return the succulent that was just saved 
+    // Return the succulent that was just saved
     newSucculent.save(function(err, succulent) {
       if (err)
-        res.send(err);
-      res.status(200).json(succulent);
+        return res.status(403).send({
+          message: "No puedo hacerlo.",
+          error: err
+        });
+      return res.status(200).json(succulent);
     });
   });
 
@@ -61,9 +64,15 @@ router.route('/succulents/:succulent_id')
     Succulent.remove({
       _id: req.params.succulent_id
     }, function(err, succulent) {
+
+      // Cannot find the succulent
       if (err)
-        res.send(err);
-      res.json({ message: 'Succulent successfully deleted!' });
+        return res.status(404).send({
+          message: "Unable to find succulent.",
+          error: err
+        });
+
+      return res.json({ message: 'Succulent successfully deleted!' });
     });
   })
 
@@ -71,18 +80,38 @@ router.route('/succulents/:succulent_id')
   .get(function(req, res) {
     Succulent.findById(req.params.succulent_id, function(err, succulent) {
       if (err)
-        res.send(err);
-      res.json(succulent);
+        return res.status(404).send({
+          message: "No esta aqui!",
+          error: err
+        });
+      return res.json(succulent);
     });
   })
 
   // Update a succulent
   .put(function(req, res) {
 
+    // Check that the user has passed in fields to update with
+    if (req.body == null) {
+      return res.status(400).send({
+        message: "How should I update the succulent?"
+      });
+    }
+
     // Find the succulent we want to update
     Succulent.findById(req.params.succulent_id, function(err, succulent) {
-      if (err)
-        res.send(err);
+
+      // Unable to find succulent
+      if (!succulent) {
+        return res.status(404).send({
+          message: "Can't find it!"
+        });
+      }
+
+      // Some other error
+      if (err) {
+        return res.status(400).send(err);
+      }
 
       // Overwrite existing succulent with new fields
       succulent.name = req.body.name;
@@ -90,10 +119,13 @@ router.route('/succulents/:succulent_id')
       succulent.location = req.body.location;
 
       // Save changes
-      succulent.save(function(err) {
+      succulent.save(function(err, succulent) {
         if (err)
-          res.send(err);
-        res.json({ message: "Succulent successfully updated!" });
+          return res.status(400).send({
+            message: "Invalid succulent update.",
+            error: err
+          });
+        return res.json(succulent);
       });
     });
   });

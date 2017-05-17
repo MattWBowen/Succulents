@@ -2,7 +2,10 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var succulentSchema = new Schema({
-  name: String,
+  name: {
+    type: String,
+    required: true
+  },
   description: String,
   found: {
     type: Date,
