@@ -91,13 +91,6 @@ router.route('/succulents/:succulent_id')
   // Update a succulent
   .put(function(req, res) {
 
-    // Check that the user has passed in fields to update with
-    if (req.body == null) {
-      return res.status(400).send({
-        message: "How should I update the succulent?"
-      });
-    }
-
     // Find the succulent we want to update
     Succulent.findById(req.params.succulent_id, function(err, succulent) {
 
