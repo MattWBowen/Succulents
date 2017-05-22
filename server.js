@@ -1,6 +1,11 @@
 // Set up the app
 var express = require('express');
 var app = express();
+app.use(express.static(__dirname + '/public'));
+
+// Set up file uploads
+var multer = require('multer');
+var upload = multer({dest: 'uploads/'})
 
 // Set up mongoose
 var mongoose = require('mongoose');
@@ -22,8 +27,8 @@ var port = process.env.PORT || 8080;
 router = express.Router();
 
 // Root route
-router.get('/', function(req, res) {
-  res.status(200).json({ message: "Hello there." });
+app.get('/', function(req, res) {
+  res.sendFile(__dirname + '/public/index.html');
 });
 
 // API routes ending in /succulents
@@ -125,6 +130,38 @@ router.route('/succulents/:succulent_id')
 
 // Hook up all API routes
 app.use('/api', router);
+
+//
+// Testing file uploads with multer.
+// Send a POST request, encoded as "multipart/form-data". The file associated
+// with the "avatar" key will be saved in "uploads/" (you need to create it).
+// Notice that all the upload functionality is handled in the upload middleware
+// (upload.single('avatar')) and all the code in here is just print statements.
+//
+app.post('/api/file-upload-test', upload.single('avatar'), function(req, res, next) {
+
+  // Check if a file was uploaded
+  if (req.file) {
+    console.log("File saved as: " + req.file.filename);
+    console.log("Original filename: " + req.file.originalname);
+
+    res.send({
+      message: "nice going bro"
+    });
+  }
+
+  // File was not uploaded
+  else {
+    console.log("no files here bro");
+    res.send({
+      message: "no files here bro"
+    });
+  }
+
+  // We still have access to all other fields passed in with the call
+  console.log("BODY: " + req.body.name);
+});
+
 app.listen(port);
 console.log("Cash me outside at " + port);
 
