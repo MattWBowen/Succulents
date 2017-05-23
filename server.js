@@ -44,11 +44,18 @@ router.route('/succulents')
   })
 
   // Create a new succulent
-  .post(function(req, res) {
+  .post(upload.single('avatar'), function(req, res) {
+
+    // Name is required, description and location are optional
     var newSucculent = new Succulent();
     newSucculent.name = req.body.name;
     newSucculent.description = req.body.description;
     newSucculent.location = req.body.location;
+
+    // Save the filename if the user has uploaded a file
+    if (req.file) {
+      newSucculent.filename = req.file.filename;
+    }
 
     // Return the succulent that was just saved
     newSucculent.save(function(err, succulent) {
@@ -130,37 +137,6 @@ router.route('/succulents/:succulent_id')
 
 // Hook up all API routes
 app.use('/api', router);
-
-//
-// Testing file uploads with multer.
-// Send a POST request, encoded as "multipart/form-data". The file associated
-// with the "avatar" key will be saved in "uploads/" (you need to create it).
-// Notice that all the upload functionality is handled in the upload middleware
-// (upload.single('avatar')) and all the code in here is just print statements.
-//
-app.post('/api/file-upload-test', upload.single('avatar'), function(req, res, next) {
-
-  // Check if a file was uploaded
-  if (req.file) {
-    console.log("File saved as: " + req.file.filename);
-    console.log("Original filename: " + req.file.originalname);
-
-    res.send({
-      message: "nice going bro"
-    });
-  }
-
-  // File was not uploaded
-  else {
-    console.log("no files here bro");
-    res.send({
-      message: "no files here bro"
-    });
-  }
-
-  // We still have access to all other fields passed in with the call
-  console.log("BODY: " + req.body.name);
-});
 
 app.listen(port);
 console.log("Cash me outside at " + port);

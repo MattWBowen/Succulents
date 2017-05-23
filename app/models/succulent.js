@@ -13,7 +13,8 @@ var succulentSchema = new Schema({
   },
   location: {
     type: [Number]
-  }
+  },
+  filename: String, 
 });
 
 succulentSchema.index({ location: '2dsphere'});
